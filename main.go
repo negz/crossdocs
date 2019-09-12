@@ -21,7 +21,6 @@ import (
 	"unicode"
 
 	"github.com/pkg/errors"
-	"github.com/russross/blackfriday/v2"
 	"k8s.io/gengo/parser"
 	"k8s.io/gengo/types"
 	"k8s.io/klog"
@@ -51,9 +50,6 @@ type generatorConfig struct {
 	// TypeDisplayNamePrefixOverrides is a mapping of how to override displayed
 	// name for types with certain prefixes with what value.
 	TypeDisplayNamePrefixOverrides map[string]string `json:"typeDisplayNamePrefixOverrides"`
-
-	// MarkdownDisabled controls markdown rendering for comment lines.
-	MarkdownDisabled bool `json:"markdownDisabled"`
 }
 
 type externalPackage struct {
@@ -136,14 +132,10 @@ func main() {
 
 	mkOutput := func() (string, error) {
 		var b bytes.Buffer
-		err := render(&b, apiPackages, config)
-		if err != nil {
+		if err := render(&b, apiPackages, config); err != nil {
 			return "", errors.Wrap(err, "failed to render the result")
 		}
-
-		// remove trailing whitespace from each html line for markdown renderers
-		s := regexp.MustCompile(`(?m)^\s+`).ReplaceAllString(b.String(), "")
-		return s, nil
+		return b.String(), nil
 	}
 
 	if *flOutFile != "" {
@@ -286,9 +278,7 @@ func findTypeReferences(pkgs []*apiPackage) map[*types.Type][]*types.Type {
 }
 
 func isExportedType(t *types.Type) bool {
-	// TODO(ahmetb) use types.ExtractSingleBoolCommentTag() to parse +genclient
-	// https://godoc.org/k8s.io/gengo/types#ExtractCommentTags
-	return strings.Contains(strings.Join(t.SecondClosestCommentLines, "\n"), "+genclient")
+	return strings.Contains(strings.Join(t.SecondClosestCommentLines, "\n"), "+kubebuilder:object:root=true")
 }
 
 func fieldName(m types.Member) string {
@@ -311,23 +301,11 @@ func isLocalType(t *types.Type, typePkgMap map[*types.Type]*apiPackage) bool {
 	return ok
 }
 
-func renderComments(s []string, markdown bool) string {
-	s = filterCommentTags(s)
-	doc := strings.Join(s, "\n")
-
-	if markdown {
-		// TODO(ahmetb): when a comment includes stuff like "http://<service>"
-		// we treat this as a HTML tag with markdown renderer below. solve this.
-		return string(blackfriday.Run([]byte(doc)))
-	}
-	return nl2br(doc)
+func renderComments(s []string) string {
+	return strings.Join(filterCommentTags(s), " ")
 }
 
 func safe(s string) template.HTML { return template.HTML(s) }
-
-func nl2br(s string) string {
-	return strings.Replace(s, "\n\n", string(template.HTML("<br/><br/>")), -1)
-}
 
 func hiddenMember(m types.Member, c generatorConfig) bool {
 	for _, v := range c.HiddenMemberFields {
@@ -356,18 +334,13 @@ func apiGroupForType(t *types.Type, typePkgMap map[*types.Type]*apiPackage) stri
 	return v.identifier()
 }
 
-// anchorIDForLocalType returns the #anchor string for the local type
-func anchorIDForLocalType(t *types.Type, typePkgMap map[*types.Type]*apiPackage) string {
-	return fmt.Sprintf("%s.%s", apiGroupForType(t, typePkgMap), t.Name.Name)
-}
-
 // linkForType returns an anchor to the type if it can be generated. returns
 // empty string if it is not a local type or unrecognized external type.
 func linkForType(t *types.Type, c generatorConfig, typePkgMap map[*types.Type]*apiPackage) (string, error) {
 	t = tryDereference(t) // dereference kind=Pointer
 
 	if isLocalType(t, typePkgMap) {
-		return "#" + anchorIDForLocalType(t, typePkgMap), nil
+		return "#" + t.Name.Name, nil
 	}
 
 	var arrIndex = func(a []string, i int) string {
@@ -509,14 +482,6 @@ func visibleTypes(in []*types.Type, c generatorConfig) []*types.Type {
 	return out
 }
 
-func packageDisplayName(pkg *types.Package, apiVersions map[string]string) string {
-	apiGroupVersion, ok := apiVersions[pkg.Path]
-	if ok {
-		return apiGroupVersion
-	}
-	return pkg.Path // go import path
-}
-
 func filterCommentTags(comments []string) []string {
 	var out []string
 	for _, v := range comments {
@@ -529,8 +494,8 @@ func filterCommentTags(comments []string) []string {
 
 func isOptionalMember(m types.Member) bool {
 	tags := types.ExtractCommentTags("+", m.CommentLines)
-	_, ok := tags["optional"]
-	return ok
+	_, optionalComment := tags["optional"]
+	return optionalComment
 }
 
 func apiVersionForPackage(pkg *types.Package) (string, string, error) {
@@ -554,17 +519,6 @@ func extractTypeToPackageMap(pkgs []*apiPackage) map[*types.Type]*apiPackage {
 	return out
 }
 
-// packageMapToList flattens the map.
-func packageMapToList(pkgs map[string]*apiPackage) []*apiPackage {
-	// TODO(ahmetb): we should probably not deal with maps, this type can be
-	// a list everywhere.
-	out := make([]*apiPackage, 0, len(pkgs))
-	for _, v := range pkgs {
-		out = append(out, v)
-	}
-	return out
-}
-
 func render(w io.Writer, pkgs []*apiPackage, config generatorConfig) error {
 	references := findTypeReferences(pkgs)
 	typePkgMap := extractTypeToPackageMap(pkgs)
@@ -576,7 +530,7 @@ func render(w io.Writer, pkgs []*apiPackage, config generatorConfig) error {
 		"typeIdentifier":     func(t *types.Type) string { return typeIdentifier(t) },
 		"typeDisplayName":    func(t *types.Type) string { return typeDisplayName(t, config, typePkgMap) },
 		"visibleTypes":       func(t []*types.Type) []*types.Type { return visibleTypes(t, config) },
-		"renderComments":     func(s []string) string { return renderComments(s, !config.MarkdownDisabled) },
+		"renderComments":     func(s []string) string { return renderComments(s) },
 		"packageDisplayName": func(p *apiPackage) string { return p.identifier() },
 		"apiGroup":           func(t *types.Type) string { return apiGroupForType(t, typePkgMap) },
 		"packageAnchorID": func(p *apiPackage) string {
@@ -594,7 +548,6 @@ func render(w io.Writer, pkgs []*apiPackage, config generatorConfig) error {
 			}
 			return v
 		},
-		"anchorIDForType":  func(t *types.Type) string { return anchorIDForLocalType(t, typePkgMap) },
 		"safe":             safe,
 		"sortedTypes":      sortTypes,
 		"typeReferences":   func(t *types.Type) []*types.Type { return typeReferences(t, config, references) },
