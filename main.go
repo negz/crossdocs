@@ -8,7 +8,6 @@ import (
 	"html/template"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,7 +16,6 @@ import (
 	"sort"
 	"strings"
 	texttemplate "text/template"
-	"time"
 	"unicode"
 
 	"github.com/pkg/errors"
@@ -31,8 +29,7 @@ var (
 	flAPIDir      = flag.String("api-dir", "", "api directory (or import path), point this to pkg/apis")
 	flTemplateDir = flag.String("template-dir", "template", "path to template/ dir")
 
-	flHTTPAddr = flag.String("http-addr", "", "start an HTTP server on specified addr to view the result (e.g. :8080)")
-	flOutFile  = flag.String("out-file", "", "path to output file to save the result")
+	flOutFile = flag.String("out-file", "", "path to output file to save the result")
 )
 
 type generatorConfig struct {
@@ -50,9 +47,6 @@ type generatorConfig struct {
 	// TypeDisplayNamePrefixOverrides is a mapping of how to override displayed
 	// name for types with certain prefixes with what value.
 	TypeDisplayNamePrefixOverrides map[string]string `json:"typeDisplayNamePrefixOverrides"`
-
-	// MarkdownDisabled controls markdown rendering for comment lines.
-	MarkdownDisabled bool `json:"markdownDisabled"`
 }
 
 type externalPackage struct {
@@ -80,11 +74,8 @@ func init() {
 	if *flAPIDir == "" {
 		panic("-api-dir not specified")
 	}
-	if *flHTTPAddr == "" && *flOutFile == "" {
-		panic("-out-file or -http-addr must be specified")
-	}
-	if *flHTTPAddr != "" && *flOutFile != "" {
-		panic("only -out-file or -http-addr can be specified")
+	if *flOutFile == "" {
+		panic("-out-file must be specified")
 	}
 	if err := resolveTemplateDir(*flTemplateDir); err != nil {
 		panic(err)
@@ -136,47 +127,21 @@ func main() {
 	mkOutput := func() (string, error) {
 		var b bytes.Buffer
 		err := render(&b, apiPackages, config)
-		if err != nil {
-			return "", errors.Wrap(err, "failed to render the result")
-		}
-
-		// remove trailing whitespace from each html line for markdown renderers
-		s := regexp.MustCompile(`(?m)^\s+`).ReplaceAllString(b.String(), "")
-		return s, nil
+		return b.String(), errors.Wrap(err, "failed to render the result")
 	}
 
-	if *flOutFile != "" {
-		dir := filepath.Dir(*flOutFile)
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			klog.Fatalf("failed to create dir %s: %v", dir, err)
-		}
-		s, err := mkOutput()
-		if err != nil {
-			klog.Fatalf("failed: %+v", err)
-		}
-		if err := ioutil.WriteFile(*flOutFile, []byte(s), 0644); err != nil {
-			klog.Fatalf("failed to write to out file: %v", err)
-		}
-		klog.Infof("written to %s", *flOutFile)
+	dir := filepath.Dir(*flOutFile)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		klog.Fatalf("failed to create dir %s: %v", dir, err)
 	}
-
-	if *flHTTPAddr != "" {
-		h := func(w http.ResponseWriter, r *http.Request) {
-			now := time.Now()
-			defer func() { klog.Infof("request took %v", time.Since(now)) }()
-			s, err := mkOutput()
-			if err != nil {
-				fmt.Fprintf(w, "error: %+v", err)
-				klog.Warningf("failed: %+v", err)
-			}
-			if _, err := fmt.Fprint(w, s); err != nil {
-				klog.Warningf("response write error: %v", err)
-			}
-		}
-		http.HandleFunc("/", h)
-		klog.Infof("server listening at %s", *flHTTPAddr)
-		klog.Fatal(http.ListenAndServe(*flHTTPAddr, nil))
+	s, err := mkOutput()
+	if err != nil {
+		klog.Fatalf("failed: %+v", err)
 	}
+	if err := ioutil.WriteFile(*flOutFile, []byte(s), 0644); err != nil {
+		klog.Fatalf("failed to write to out file: %v", err)
+	}
+	klog.Infof("written to %s", *flOutFile)
 }
 
 // groupName extracts the "//+groupName" meta-comment from the specified
@@ -300,7 +265,20 @@ func fieldName(m types.Member) string {
 	return m.Name
 }
 
-func fieldEmbedded(m types.Member) bool {
+func embeddedFields(t *types.Type, c generatorConfig) []types.Member {
+	em := make([]types.Member, 0, len(t.Members))
+	for _, m := range t.Members {
+		if fieldEmbedded(m, c) {
+			em = append(em, m)
+		}
+	}
+	return em
+}
+
+func fieldEmbedded(m types.Member, c generatorConfig) bool {
+	if hiddenMember(m, c) {
+		return false
+	}
 	return strings.Contains(reflect.StructTag(m.Tags).Get("json"), ",inline")
 }
 
@@ -342,18 +320,13 @@ func apiGroupForType(t *types.Type, typePkgMap map[*types.Type]*apiPackage) stri
 	return v.identifier()
 }
 
-// anchorIDForLocalType returns the #anchor string for the local type
-func anchorIDForLocalType(t *types.Type, typePkgMap map[*types.Type]*apiPackage) string {
-	return fmt.Sprintf("%s.%s", apiGroupForType(t, typePkgMap), t.Name.Name)
-}
-
 // linkForType returns an anchor to the type if it can be generated. returns
 // empty string if it is not a local type or unrecognized external type.
 func linkForType(t *types.Type, c generatorConfig, typePkgMap map[*types.Type]*apiPackage) (string, error) {
 	t = tryDereference(t) // dereference kind=Pointer
 
 	if isLocalType(t, typePkgMap) {
-		return "#" + anchorIDForLocalType(t, typePkgMap), nil
+		return "#" + t.Name.Name, nil
 	}
 
 	var arrIndex = func(a []string, i int) string {
@@ -550,7 +523,8 @@ func render(w io.Writer, pkgs []*apiPackage, config generatorConfig) error {
 	t, err := template.New("").Funcs(map[string]interface{}{
 		"isExportedType":     isExportedType,
 		"fieldName":          fieldName,
-		"fieldEmbedded":      fieldEmbedded,
+		"fieldEmbedded":      func(m types.Member) bool { return fieldEmbedded(m, config) },
+		"embeddedFields":     func(t *types.Type) []types.Member { return embeddedFields(t, config) },
 		"typeIdentifier":     func(t *types.Type) string { return typeIdentifier(t) },
 		"typeDisplayName":    func(t *types.Type) string { return typeDisplayName(t, config, typePkgMap) },
 		"visibleTypes":       func(t []*types.Type) []*types.Type { return visibleTypes(t, config) },
@@ -565,7 +539,6 @@ func render(w io.Writer, pkgs []*apiPackage, config generatorConfig) error {
 			}
 			return v
 		},
-		"anchorIDForType":  func(t *types.Type) string { return anchorIDForLocalType(t, typePkgMap) },
 		"sortedTypes":      sortTypes,
 		"typeReferences":   func(t *types.Type) []*types.Type { return typeReferences(t, config, references) },
 		"hiddenMember":     func(m types.Member) bool { return hiddenMember(m, config) },

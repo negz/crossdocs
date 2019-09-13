@@ -1,2 +1,2 @@
-{{ define "embed" }}{{- if (and (fieldEmbedded .) (not (hiddenMember .))) }}Supports all fields of {{ if linkForType .Type }}[{{ typeDisplayName .Type}}]({{ linkForType .Type }}){{ else }}{{ typeDisplayName .Type }}{{ end }}.
-{{ end }}{{ end -}}
+{{ define "embed" }}
+* {{ if linkForType .Type }}[{{ typeDisplayName .Type}}]({{ linkForType .Type }}){{ else }}{{ typeDisplayName .Type }}{{ end }}{{ end -}}

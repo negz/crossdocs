@@ -4,8 +4,8 @@
 {{ renderComments .CommentLines }}{{ if eq .Kind "Alias" }} Alias of {{.Underlying}}.{{- end}}
 {{ with (typeReferences .) }}
 Appears in:
-
-{{ range . }}{{ if linkForType . }}* [{{ typeDisplayName . }}](#{{ typeDisplayName . }}){{ else }}* {{ typeDisplayName . }}{{ end }}{{ end }}
+{{ range . }}{{ if linkForType . }}
+* [{{ typeDisplayName . }}](#{{ typeDisplayName . }}){{ else }}* {{ typeDisplayName . }}{{ end }}{{ end }}
 {{ end }}
 {{ if .Members -}}
 Name | Type | Description
@@ -15,6 +15,9 @@ Name | Type | Description
 `kind` | string | `{{.Name.Name}}`
 {{- end }}
 {{ range .Members }}{{ template "member" . }}{{end}}
-{{ range .Members }}{{ template "embed" . }}{{end}}
+{{ with embeddedFields . }}
+Also supports all fields of:
+{{ range . }}{{ template "embed" . }}{{end}}
+{{ end }}
 {{ end -}}
 {{- end -}}
