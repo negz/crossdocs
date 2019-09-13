@@ -1,0 +1,2 @@
+{{ define "member" }}{{ if not (or (hiddenMember .) (fieldEmbedded .)) }}`{{ fieldName .}}` | {{ if isOptionalMember . }}Optional {{ end}}{{ if linkForType .Type }}[{{ typeDisplayName .Type }}]({{ linkForType .Type }}){{ else }}{{ typeDisplayName .Type }}{{ end}} | {{ if and (eq (.Type.Name.Name) "ObjectMeta") }}Kubernetes object metadata.{{ else }}{{ with (renderComments .CommentLines) }}{{ . }}{{ else }}{{ renderComments .Type.CommentLines }}{{ end }}{{ end }}
+{{ end }}{{ end }}

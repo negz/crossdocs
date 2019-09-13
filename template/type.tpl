@@ -1,58 +1,20 @@
-{{ define "type" }}
+{{- define "type" }}
+## {{ .Name.Name }}
 
-<h3 id="{{ anchorIDForType . }}">
-    {{- .Name.Name }}
-    {{ if eq .Kind "Alias" }}(<code>{{.Underlying}}</code> alias)</p>{{ end -}}
-</h3>
+{{ renderComments .CommentLines }}{{ if eq .Kind "Alias" }} Alias of {{.Underlying}}.{{- end}}
 {{ with (typeReferences .) }}
-    <p>
-        (<em>Appears on:</em>
-        {{- $prev := "" -}}
-        {{- range . -}}
-            {{- if $prev -}}, {{ end -}}
-            {{ $prev = . }}
-            <a href="{{ linkForType . }}">{{ typeDisplayName . }}</a>
-        {{- end -}}
-        )
-    </p>
+Appears in:
+
+{{ range . }}{{ if linkForType . }}* [{{ typeDisplayName . }}](#{{ typeDisplayName . }}){{ else }}* {{ typeDisplayName . }}{{ end }}{{ end }}
 {{ end }}
-
-
-<p>
-    {{ safe (renderComments .CommentLines) }}
-</p>
-
-{{ if .Members }}
-<table>
-    <thead>
-        <tr>
-            <th>Field</th>
-            <th>Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        {{ if isExportedType . }}
-        <tr>
-            <td>
-                <code>apiVersion</code></br>
-                string</td>
-            <td>
-                <code>
-                    {{apiGroup .}}
-                </code>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <code>kind</code></br>
-                string
-            </td>
-            <td><code>{{.Name.Name}}</code></td>
-        </tr>
-        {{ end }}
-        {{ template "members" .}}
-    </tbody>
-</table>
-{{ end }}
-
-{{ end }}
+{{ if .Members -}}
+Name | Type | Description
+-----|------|------------
+{{- if isExportedType . }}
+`apiVersion` | string | `{{apiGroup .}}`
+`kind` | string | `{{.Name.Name}}`
+{{- end }}
+{{ range .Members }}{{ template "member" . }}{{end}}
+{{ range .Members }}{{ template "embed" . }}{{end}}
+{{ end -}}
+{{- end -}}

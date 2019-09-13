@@ -14,3 +14,9 @@ refdocs
 
 # goreleaser output
 dist
+
+# API doc output - intended to be copied to the Crossplane repo.
+out
+
+# Go vendor dir
+vendor

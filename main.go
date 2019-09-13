@@ -21,7 +21,6 @@ import (
 	"unicode"
 
 	"github.com/pkg/errors"
-	"github.com/russross/blackfriday/v2"
 	"k8s.io/gengo/parser"
 	"k8s.io/gengo/types"
 	"k8s.io/klog"
@@ -311,22 +310,9 @@ func isLocalType(t *types.Type, typePkgMap map[*types.Type]*apiPackage) bool {
 	return ok
 }
 
-func renderComments(s []string, markdown bool) string {
+func renderComments(s []string) string {
 	s = filterCommentTags(s)
-	doc := strings.Join(s, "\n")
-
-	if markdown {
-		// TODO(ahmetb): when a comment includes stuff like "http://<service>"
-		// we treat this as a HTML tag with markdown renderer below. solve this.
-		return string(blackfriday.Run([]byte(doc)))
-	}
-	return nl2br(doc)
-}
-
-func safe(s string) template.HTML { return template.HTML(s) }
-
-func nl2br(s string) string {
-	return strings.Replace(s, "\n\n", string(template.HTML("<br/><br/>")), -1)
+	return strings.Join(s, " ")
 }
 
 func hiddenMember(m types.Member, c generatorConfig) bool {
@@ -509,14 +495,6 @@ func visibleTypes(in []*types.Type, c generatorConfig) []*types.Type {
 	return out
 }
 
-func packageDisplayName(pkg *types.Package, apiVersions map[string]string) string {
-	apiGroupVersion, ok := apiVersions[pkg.Path]
-	if ok {
-		return apiGroupVersion
-	}
-	return pkg.Path // go import path
-}
-
 func filterCommentTags(comments []string) []string {
 	var out []string
 	for _, v := range comments {
@@ -576,16 +554,9 @@ func render(w io.Writer, pkgs []*apiPackage, config generatorConfig) error {
 		"typeIdentifier":     func(t *types.Type) string { return typeIdentifier(t) },
 		"typeDisplayName":    func(t *types.Type) string { return typeDisplayName(t, config, typePkgMap) },
 		"visibleTypes":       func(t []*types.Type) []*types.Type { return visibleTypes(t, config) },
-		"renderComments":     func(s []string) string { return renderComments(s, !config.MarkdownDisabled) },
+		"renderComments":     func(s []string) string { return renderComments(s) },
 		"packageDisplayName": func(p *apiPackage) string { return p.identifier() },
 		"apiGroup":           func(t *types.Type) string { return apiGroupForType(t, typePkgMap) },
-		"packageAnchorID": func(p *apiPackage) string {
-			// TODO(ahmetb): currently this is the same as packageDisplayName
-			// func, and it's fine since it retuns valid DOM id strings like
-			// 'serving.knative.dev/v1alpha1' which is valid per HTML5, except
-			// spaces, so just trim those.
-			return strings.Replace(p.identifier(), " ", "", -1)
-		},
 		"linkForType": func(t *types.Type) string {
 			v, err := linkForType(t, config, typePkgMap)
 			if err != nil {
@@ -595,7 +566,6 @@ func render(w io.Writer, pkgs []*apiPackage, config generatorConfig) error {
 			return v
 		},
 		"anchorIDForType":  func(t *types.Type) string { return anchorIDForLocalType(t, typePkgMap) },
-		"safe":             safe,
 		"sortedTypes":      sortTypes,
 		"typeReferences":   func(t *types.Type) []*types.Type { return typeReferences(t, config, references) },
 		"hiddenMember":     func(m types.Member) bool { return hiddenMember(m, config) },

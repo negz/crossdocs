@@ -1,49 +1,16 @@
-{{ define "packages" }}
+{{- define "packages" -}}
+{{- range .packages -}}
+# {{ packageDisplayName . }} API Reference
 
-{{ with .packages}}
-<p>Packages:</p>
-<ul>
-    {{ range . }}
-    <li>
-        <a href="#{{- packageAnchorID . -}}">{{ packageDisplayName . }}</a>
-    </li>
-    {{ end }}
-</ul>
-{{ end}}
+{{ with (index .GoPackages 0 ) }}{{ renderComments .DocComments }}{{ end }}
 
-{{ range .packages }}
-    <h2 id="{{- packageAnchorID . -}}">
-        {{- packageDisplayName . -}}
-    </h2>
+This API group contains the following resources:
 
-    {{ with (index .GoPackages 0 )}}
-        {{ with .DocComments }}
-        <p>
-            {{ safe (renderComments .) }}
-        </p>
-        {{ end }}
-    {{ end }}
-
-    Resource Types:
-    <ul>
-    {{- range (visibleTypes (sortedTypes .Types)) -}}
-        {{ if isExportedType . -}}
-        <li>
-            <a href="{{ linkForType . }}">{{ typeDisplayName . }}</a>
-        </li>
-        {{- end }}
-    {{- end -}}
-    </ul>
-
-    {{ range (visibleTypes (sortedTypes .Types))}}
-        {{ template "type" .  }}
-    {{ end }}
-    <hr/>
-{{ end }}
-
-<p><em>
-    Generated with <code>gen-crd-api-reference-docs</code>
-    {{ with .gitCommit }} on git commit <code>{{ . }}</code>{{end}}.
-</em></p>
-
-{{ end }}
+{{ range (visibleTypes (sortedTypes .Types)) }}{{ if (isExportedType .) }}* [{{ typeDisplayName . }}]({{ linkForType . }})
+{{ end }}{{- end -}}
+{{- range (visibleTypes (sortedTypes .Types)) -}}
+{{ template "type" .  }}
+{{- end -}}
+{{end}}
+Generated with `gen-crd-api-reference-docs`{{ with .gitCommit }} on git commit `{{ . }}`{{end}}.
+{{- end -}}
