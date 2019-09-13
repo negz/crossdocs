@@ -27,8 +27,8 @@ gendoc crossplaneio crossplane apis stacks v1alpha1
 gendoc crossplaneio crossplane apis storage v1alpha1
 gendoc crossplaneio crossplane apis workload v1alpha1
 
-# TODO(negz): Support the base aws/apis/v1alpha2 package
-gendoc crossplaneio stack-aws aws/apis cache v1alpha2
-gendoc crossplaneio stack-aws aws/apis compute v1alpha2
-gendoc crossplaneio stack-aws aws/apis database v1alpha2
-gendoc crossplaneio stack-aws aws/apis storage v1alpha2
+gendoc crossplaneio stack-gcp gcp/apis cache v1alpha2
+gendoc crossplaneio stack-gcp gcp/apis compute v1alpha2
+gendoc crossplaneio stack-gcp gcp/apis database v1alpha2
+gendoc crossplaneio stack-gcp gcp/apis storage v1alpha2
+gendoc crossplaneio stack-gcp gcp apis v1alpha2
