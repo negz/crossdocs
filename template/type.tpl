@@ -8,16 +8,18 @@ Appears in:
 * [{{ typeDisplayName . }}](#{{ typeDisplayName . }}){{ else }}* {{ typeDisplayName . }}{{ end }}{{ end }}
 {{ end }}
 {{ if .Members -}}
+{{ if (gt (len .Members) (len (embeddedFields .)))}}
 Name | Type | Description
 -----|------|------------
+{{- end -}}
 {{- if isExportedType . }}
 `apiVersion` | string | `{{apiGroup .}}`
 `kind` | string | `{{.Name.Name}}`
 {{- end }}
 {{ range .Members }}{{ template "member" . }}{{end}}
-{{ with embeddedFields . }}
-Also supports all fields of:
-{{ range . }}{{ template "embed" . }}{{end}}
+{{ if embeddedFields . }}
+{{ .Name.Name }} supports all fields of:
+{{ range embeddedFields . }}{{ template "embed" . }}{{end}}
 {{ end }}
 {{ end -}}
 {{- end -}}
