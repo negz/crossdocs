@@ -173,7 +173,7 @@ func parseAPIPackages(dir string) ([]*types.Package, error) {
 		// Do not pick up packages that are in vendor/ as API packages. (This
 		// happened in knative/eventing-sources/vendor/..., where a package
 		// matched the pattern, but it didn't have a compatible import path).
-		if isVendorPackage(pkg) {
+		if isVendorPackage(pkg) && !isCrossplane(pkg) {
 			klog.V(3).Infof("package=%v coming from vendor/, ignoring.", p)
 			continue
 		}
@@ -229,7 +229,10 @@ func combineAPIPackages(pkgs []*types.Package) ([]*apiPackage, error) {
 	return out, nil
 }
 
-// isVendorPackage determines if package is coming from vendor/ dir.
+func isCrossplane(pkg *types.Package) bool {
+	crossplanePattern := string(os.PathSeparator) + "crossplaneio" + string(os.PathSeparator)
+	return strings.Contains(pkg.SourcePath, crossplanePattern)
+}
 func isVendorPackage(pkg *types.Package) bool {
 	vendorPattern := string(os.PathSeparator) + "vendor" + string(os.PathSeparator)
 	return strings.Contains(pkg.SourcePath, vendorPattern)

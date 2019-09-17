@@ -24,6 +24,22 @@
 #   go-tests = true
 #   unused-packages = true
 
+required = [
+    # The Crossplane packages we want to generate API docs for.
+    "github.com/crossplaneio/crossplane-runtime/apis",
+    "github.com/crossplaneio/crossplane/apis",
+    "github.com/crossplaneio/stack-aws/aws/apis",
+    "github.com/crossplaneio/stack-azure/azure/apis",
+    "github.com/crossplaneio/stack-gcp/gcp/apis",
+    ]
+
+# For dependency below: Refer to issue https://github.com/golang/dep/issues/1799
+[[override]]
+  name = "gopkg.in/fsnotify.v1"
+  source = "https://github.com/fsnotify/fsnotify.git"
+  version="v1.4.7"
+
+# OG gen-crd-api-reference-docs constraints follow....
 
 [[constraint]]
   name = "github.com/pkg/errors"

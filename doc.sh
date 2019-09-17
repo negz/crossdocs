@@ -7,7 +7,7 @@ gendoc() {
     local package=$4
     local version=$5
 
-    local group_name=$(grep groupName ${GOPATH}/src/github.com/${org}/${project}/${dir}/${package}/${version}/doc.go | awk -F= '{ print $2 }')
+    local group_name=$(grep groupName vendor/github.com/${org}/${project}/${dir}/${package}/${version}/doc.go | awk -F= '{ print $2 }')
 
     mkdir -p out/docs/api/${org}/${project}
 
@@ -23,7 +23,7 @@ packages() {
     local project=$2
     local dir=$3
 
-    find $GOPATH/src/github.com/${org}/${project}/${dir} \
+    find vendor/github.com/${org}/${project}/${dir} \
         -type d \
         -depth 1 \
         -exec basename {} \;
