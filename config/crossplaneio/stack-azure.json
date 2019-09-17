@@ -18,11 +18,21 @@
         {
             "typeMatchPrefix": "^github\\.com/crossplaneio/crossplane-runtime/apis/",
             "docsURLTemplate": "../crossplane-runtime/{{arrIndex .PackageSegments -2}}-crossplane-io-{{arrIndex .PackageSegments -1}}.md#{{lower .TypeIdentifier}}"
+        },
+        {
+            "typeMatchPrefix": "^github\\.com/Azure/azure-storage-blob-go/",
+            "docsURLTemplate": "https://godoc.org/github.com/Azure/azure-storage-blob-go/{{arrIndex .PackageSegments -1}}#{{.TypeIdentifier}}"
+        },
+        {
+            "typeMatchPrefix": "^github\\.com/Azure/azure-sdk-for-go/services/storage/mgmt/2017-06-01/",
+            "docsURLTemplate": "https://godoc.org/github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2017-06-01/{{arrIndex .PackageSegments -1}}#{{.TypeIdentifier}}"
         }
     ],
     "typeDisplayNamePrefixOverrides": {
         "k8s.io/api/": "",
         "k8s.io/apimachinery/pkg/apis/": "",
-        "github.com/crossplaneio/crossplane-runtime/apis/core/": ""
+        "github.com/crossplaneio/crossplane-runtime/apis/core/": "",
+        "github.com/Azure/azure-storage-blob-go/": "",
+        "github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2017-06-01/": ""
     }
 }

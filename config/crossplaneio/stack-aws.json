@@ -18,11 +18,21 @@
         {
             "typeMatchPrefix": "^github\\.com/crossplaneio/crossplane-runtime/apis/",
             "docsURLTemplate": "../crossplane-runtime/{{arrIndex .PackageSegments -2}}-crossplane-io-{{arrIndex .PackageSegments -1}}.md#{{lower .TypeIdentifier}}"
+        },
+        {
+            "typeMatchPrefix": "^github\\.com/crossplaneio/crossplane/apis/",
+            "docsURLTemplate": "../crossplane/{{arrIndex .PackageSegments -2}}-crossplane-io-{{arrIndex .PackageSegments -1}}.md#{{lower .TypeIdentifier}}"
+        },
+        {
+            "typeMatchPrefix": "^github\\.com/aws/aws-sdk-go-v2/",
+            "docsURLTemplate": "https://godoc.org/github.com/aws/aws-sdk-go-v2/{{arrIndex .PackageSegments -2}}/{{arrIndex .PackageSegments -1}}#{{.TypeIdentifier}}"
         }
     ],
     "typeDisplayNamePrefixOverrides": {
         "k8s.io/api/": "",
         "k8s.io/apimachinery/pkg/apis/": "",
-        "github.com/crossplaneio/crossplane-runtime/apis/core/": ""
+        "github.com/crossplaneio/crossplane-runtime/apis/core/": "",
+        "github.com/crossplaneio/crossplane/apis/": "",
+        "github.com/aws/aws-sdk-go-v2/service/": ""
     }
 }

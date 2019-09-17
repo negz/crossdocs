@@ -18,6 +18,10 @@
         {
             "typeMatchPrefix": "^github\\.com/crossplaneio/crossplane-runtime/apis/",
             "docsURLTemplate": "../crossplane-runtime/{{arrIndex .PackageSegments -2}}-crossplane-io-{{arrIndex .PackageSegments -1}}.md#{{lower .TypeIdentifier}}"
+        },
+        {
+            "typeMatchPrefix": "encoding/",
+            "docsURLTemplate": "https://golang.org/pkg/encoding/{{arrIndex .PackageSegments -1}}#{{.TypeIdentifier}}"
         }
     ],
     "typeDisplayNamePrefixOverrides": {
