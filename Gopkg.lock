@@ -134,7 +134,7 @@
     "apis/workload/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "134e58b44ae50bd1cf397e2cccd74abff3df3efa"
+  revision = "a7ad3d70f478896d2470977462b48305576e26ac"
 
 [[projects]]
   branch = "master"
@@ -199,7 +199,7 @@
     "gcp/apis/v1alpha2",
   ]
   pruneopts = "UT"
-  revision = "55231523f26f753e8a69a43c3322b2a67b1ff3eb"
+  revision = "42ebb8b716260226f8c61380caba87b9c28f0afa"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
