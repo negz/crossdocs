@@ -253,9 +253,7 @@ func findTypeReferences(pkgs []*apiPackage) map[*types.Type][]*types.Type {
 }
 
 func isExportedType(t *types.Type) bool {
-	// TODO(ahmetb) use types.ExtractSingleBoolCommentTag() to parse +genclient
-	// https://godoc.org/k8s.io/gengo/types#ExtractCommentTags
-	return strings.Contains(strings.Join(t.SecondClosestCommentLines, "\n"), "+genclient")
+	return strings.Contains(strings.Join(t.SecondClosestCommentLines, "\n"), "+kubebuilder:object:root=true")
 }
 
 func fieldName(m types.Member) string {

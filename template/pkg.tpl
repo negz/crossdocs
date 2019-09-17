@@ -4,7 +4,7 @@
 
 {{ with (index .GoPackages 0 ) }}{{ renderComments .DocComments }}{{ end }}
 
-This API group contains the following resources:
+This API group contains the following Crossplane resources:
 
 {{ range (visibleTypes (sortedTypes .Types)) }}{{ if (isExportedType .) }}* [{{ typeDisplayName . }}]({{ linkForType . }})
 {{ end }}{{- end -}}
