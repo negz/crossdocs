@@ -18,29 +18,36 @@ gendoc() {
         -out-file out/docs/api/${org}/${project}/${group_name//./-}-${version}.md
 }
 
-gendoc crossplaneio crossplane-runtime apis core v1alpha1
+packages() {
+    local org=$1
+    local project=$2
+    local dir=$3
 
-gendoc crossplaneio crossplane apis cache v1alpha1
-gendoc crossplaneio crossplane apis compute v1alpha1
-gendoc crossplaneio crossplane apis database v1alpha1
-gendoc crossplaneio crossplane apis stacks v1alpha1
-gendoc crossplaneio crossplane apis storage v1alpha1
-gendoc crossplaneio crossplane apis workload v1alpha1
+    find $GOPATH/src/github.com/${org}/${project}/${dir} \
+        -type d \
+        -depth 1 \
+        -exec basename {} \;
+}
 
-gendoc crossplaneio stack-aws aws/apis cache v1alpha2
-gendoc crossplaneio stack-aws aws/apis compute v1alpha2
-gendoc crossplaneio stack-aws aws/apis database v1alpha2
-gendoc crossplaneio stack-aws aws/apis storage v1alpha2
+for package in $(packages crossplaneio crossplane-runtime apis); do
+    gendoc crossplaneio crossplane-runtime apis $package v1alpha1
+done
+
+for package in $(packages crossplaneio crossplane apis); do
+    gendoc crossplaneio crossplane apis $package v1alpha1
+done
+
 gendoc crossplaneio stack-aws aws apis v1alpha2
+for package in $(packages crossplaneio stack-aws aws/apis | grep -v v1alpha2); do
+    gendoc crossplaneio stack-aws aws/apis $package v1alpha2
+done
 
-gendoc crossplaneio stack-azure azure/apis cache v1alpha2
-gendoc crossplaneio stack-azure azure/apis compute v1alpha2
-gendoc crossplaneio stack-azure azure/apis database v1alpha2
-gendoc crossplaneio stack-azure azure/apis storage v1alpha2
 gendoc crossplaneio stack-azure azure apis v1alpha2
+for package in $(packages crossplaneio stack-azure azure/apis | grep -v v1alpha2); do
+    gendoc crossplaneio stack-azure azure/apis $package v1alpha2
+done
 
-gendoc crossplaneio stack-gcp gcp/apis cache v1alpha2
-gendoc crossplaneio stack-gcp gcp/apis compute v1alpha2
-gendoc crossplaneio stack-gcp gcp/apis database v1alpha2
-gendoc crossplaneio stack-gcp gcp/apis storage v1alpha2
 gendoc crossplaneio stack-gcp gcp apis v1alpha2
+for package in $(packages crossplaneio stack-gcp gcp/apis | grep -v v1alpha2); do
+    gendoc crossplaneio stack-gcp gcp/apis $package v1alpha2
+done
