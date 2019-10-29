@@ -28,9 +28,10 @@ required = [
     # The Crossplane packages we want to generate API docs for.
     "github.com/crossplaneio/crossplane-runtime/apis",
     "github.com/crossplaneio/crossplane/apis",
-    "github.com/crossplaneio/stack-aws/aws/apis",
-    "github.com/crossplaneio/stack-azure/azure/apis",
-    "github.com/crossplaneio/stack-gcp/gcp/apis",
+    "github.com/crossplaneio/stack-aws/apis",
+    "github.com/crossplaneio/stack-azure/apis",
+    "github.com/crossplaneio/stack-gcp/apis",
+    "github.com/crossplaneio/stack-rook/apis",
     ]
 
 # For dependency below: Refer to issue https://github.com/golang/dep/issues/1799
