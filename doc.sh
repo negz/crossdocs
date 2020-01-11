@@ -47,9 +47,12 @@ gendoc crossplaneio stack-aws apis storage v1alpha3
 gendoc crossplaneio stack-aws apis compute v1alpha3
 
 gendoc crossplaneio stack-azure apis "" v1alpha3
-for package in $(packages crossplaneio stack-azure apis | grep -v v1alpha3); do
-    gendoc crossplaneio stack-azure apis $package v1alpha3
-done
+gendoc crossplaneio stack-azure apis cache v1beta1
+gendoc crossplaneio stack-azure apis compute v1alpha3
+gendoc crossplaneio stack-azure apis database v1alpha3
+gendoc crossplaneio stack-azure apis database v1beta1
+gendoc crossplaneio stack-azure apis network v1alpha3
+gendoc crossplaneio stack-azure apis storage v1alpha3
 
 gendoc crossplaneio stack-gcp apis "" v1alpha3
 gendoc crossplaneio stack-gcp apis servicenetworking v1alpha3
@@ -57,6 +60,8 @@ gendoc crossplaneio stack-gcp apis database v1beta1
 gendoc crossplaneio stack-gcp apis cache v1beta1
 gendoc crossplaneio stack-gcp apis storage v1alpha3
 gendoc crossplaneio stack-gcp apis compute v1alpha3
+gendoc crossplaneio stack-gcp apis container v1alpha1
+gendoc crossplaneio stack-gcp apis container v1beta1
 
 gendoc crossplaneio stack-rook apis "" v1alpha1
 for package in $(packages crossplaneio stack-rook apis | grep -v v1alpha1); do
