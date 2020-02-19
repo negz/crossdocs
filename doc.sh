@@ -23,47 +23,50 @@ packages() {
     local project=$2
     local dir=$3
 
-    find vendor/github.com/${org}/${project}/${dir} \
+    find ./vendor/github.com/${org}/${project}/${dir} \
         -type d \
-        -depth 1 \
+        -maxdepth 1 \
+        -mindepth 1 \
         -exec basename {} \;
 }
 
-for package in $(packages crossplaneio crossplane-runtime apis); do
-    gendoc crossplaneio crossplane-runtime apis $package v1alpha1
+for package in $(packages crossplane crossplane-runtime apis); do
+    gendoc crossplane crossplane-runtime apis $package v1alpha1
 done
 
-for package in $(packages crossplaneio crossplane apis); do
-    gendoc crossplaneio crossplane apis $package v1alpha1
+for package in $(packages crossplane crossplane apis); do
+    gendoc crossplane crossplane apis $package v1alpha1
 done
 
-gendoc crossplaneio stack-aws apis "" v1alpha3
-gendoc crossplaneio stack-aws apis database v1alpha3
-gendoc crossplaneio stack-aws apis database v1beta1
-gendoc crossplaneio stack-aws apis cache v1beta1
-gendoc crossplaneio stack-aws apis identity v1alpha3
-gendoc crossplaneio stack-aws apis network v1alpha3
-gendoc crossplaneio stack-aws apis storage v1alpha3
-gendoc crossplaneio stack-aws apis compute v1alpha3
 
-gendoc crossplaneio stack-azure apis "" v1alpha3
-gendoc crossplaneio stack-azure apis cache v1beta1
-gendoc crossplaneio stack-azure apis compute v1alpha3
-gendoc crossplaneio stack-azure apis database v1alpha3
-gendoc crossplaneio stack-azure apis database v1beta1
-gendoc crossplaneio stack-azure apis network v1alpha3
-gendoc crossplaneio stack-azure apis storage v1alpha3
+gendoc crossplane stack-aws apis "" v1alpha3
+gendoc crossplane stack-aws apis database v1alpha3
+gendoc crossplane stack-aws apis database v1beta1
+gendoc crossplane stack-aws apis cache v1beta1
+gendoc crossplane stack-aws apis identity v1alpha3
+gendoc crossplane stack-aws apis network v1alpha3
+gendoc crossplane stack-aws apis storage v1alpha3
+gendoc crossplane stack-aws apis compute v1alpha3
 
-gendoc crossplaneio stack-gcp apis "" v1alpha3
-gendoc crossplaneio stack-gcp apis servicenetworking v1alpha3
-gendoc crossplaneio stack-gcp apis database v1beta1
-gendoc crossplaneio stack-gcp apis cache v1beta1
-gendoc crossplaneio stack-gcp apis storage v1alpha3
-gendoc crossplaneio stack-gcp apis compute v1alpha3
-gendoc crossplaneio stack-gcp apis container v1alpha1
-gendoc crossplaneio stack-gcp apis container v1beta1
+gendoc crossplane stack-azure apis "" v1alpha3
+gendoc crossplane stack-azure apis cache v1beta1
+gendoc crossplane stack-azure apis compute v1alpha3
+gendoc crossplane stack-azure apis database v1alpha3
+gendoc crossplane stack-azure apis database v1beta1
+gendoc crossplane stack-azure apis network v1alpha3
+gendoc crossplane stack-azure apis storage v1alpha3
 
-gendoc crossplaneio stack-rook apis "" v1alpha1
-for package in $(packages crossplaneio stack-rook apis | grep -v v1alpha1); do
-    gendoc crossplaneio stack-rook apis $package v1alpha1
+gendoc crossplane stack-gcp apis "" v1alpha3
+gendoc crossplane stack-gcp apis servicenetworking v1beta1
+gendoc crossplane stack-gcp apis database v1beta1
+gendoc crossplane stack-gcp apis cache v1beta1
+gendoc crossplane stack-gcp apis storage v1alpha3
+gendoc crossplane stack-gcp apis compute v1alpha3
+gendoc crossplane stack-gcp apis compute v1beta1
+gendoc crossplane stack-gcp apis container v1alpha1
+gendoc crossplane stack-gcp apis container v1beta1
+
+gendoc crossplane stack-rook apis "" v1alpha1
+for package in $(packages crossplane stack-rook apis | grep -v v1alpha1); do
+    gendoc crossplane stack-rook apis $package v1alpha1
 done

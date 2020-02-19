@@ -230,7 +230,7 @@ func combineAPIPackages(pkgs []*types.Package) ([]*apiPackage, error) {
 }
 
 func isCrossplane(pkg *types.Package) bool {
-	crossplanePattern := string(os.PathSeparator) + "crossplaneio" + string(os.PathSeparator)
+	crossplanePattern := string(os.PathSeparator) + "crossplane" + string(os.PathSeparator)
 	return strings.Contains(pkg.SourcePath, crossplanePattern)
 }
 func isVendorPackage(pkg *types.Package) bool {
