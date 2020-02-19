@@ -16,11 +16,11 @@
             "docsURLTemplate": "https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#{{lower .TypeIdentifier}}-{{arrIndex .PackageSegments -1}}-{{arrIndex .PackageSegments -2}}"
         },
         {
-            "typeMatchPrefix": "^github\\.com/crossplaneio/crossplane-runtime/apis/",
+            "typeMatchPrefix": "^github\\.com/crossplane/crossplane-runtime/apis/",
             "docsURLTemplate": "../crossplane-runtime/{{arrIndex .PackageSegments -2}}-crossplane-io-{{arrIndex .PackageSegments -1}}.md#{{lower .TypeIdentifier}}"
         },
         {
-            "typeMatchPrefix": "^github\\.com/crossplaneio/crossplane/apis/",
+            "typeMatchPrefix": "^github\\.com/crossplane/crossplane/apis/",
             "docsURLTemplate": "../crossplane/{{arrIndex .PackageSegments -2}}-crossplane-io-{{arrIndex .PackageSegments -1}}.md#{{lower .TypeIdentifier}}"
         },
         {
@@ -31,8 +31,8 @@
     "typeDisplayNamePrefixOverrides": {
         "k8s.io/api/": "",
         "k8s.io/apimachinery/pkg/apis/": "",
-        "github.com/crossplaneio/crossplane-runtime/apis/core/": "",
-        "github.com/crossplaneio/crossplane/apis/": "",
+        "github.com/crossplane/crossplane-runtime/apis/core/": "",
+        "github.com/crossplane/crossplane/apis/": "",
         "github.com/aws/aws-sdk-go-v2/service/": ""
     }
 }
